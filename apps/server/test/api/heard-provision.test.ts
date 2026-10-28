@@ -208,6 +208,51 @@ describe('dedicated Heard provisioning', () => {
 });
 
 describe('managed account and workspace route guards', () => {
+  it('denies a native account even if it has a legacy membership in a managed workspace', async () => {
+    const managed = await provisionHeardIdentity(
+      identity(randomUUID(), 'admin')
+    );
+    const native = await createAccount({ password: 'Password123!' });
+    await createUser({
+      workspaceId: managed.workspaceId,
+      account: native,
+      role: 'admin',
+    });
+    const { token } = await createDevice({ accountId: native.id });
+
+    const workspaceResponse = await app.inject({
+      method: 'GET',
+      url: `/client/v1/workspaces/${managed.workspaceId}`,
+      headers: buildAuthHeader(token),
+    });
+    expect(workspaceResponse.statusCode).toBe(403);
+    expect(workspaceResponse.json()).toMatchObject({
+      code: ApiErrorCode.WorkspaceNoAccess,
+    });
+
+    const sync = await app.inject({
+      method: 'POST',
+      url: '/client/v1/accounts/sync',
+      headers: buildAuthHeader(token),
+    });
+    expect(sync.statusCode).toBe(200);
+    expect(sync.json().workspaces).toEqual([]);
+
+    const nativeLogin = await app.inject({
+      method: 'POST',
+      url: '/client/v1/auth/email/login',
+      payload: { email: native.email, password: 'Password123!' },
+    });
+    expect(nativeLogin.statusCode).toBe(200);
+    expect(
+      nativeLogin
+        .json()
+        .workspaces.every(
+          (workspace: { id: string }) => workspace.id !== managed.workspaceId
+        )
+    ).toBe(true);
+  });
+
   it('blocks native login, member escalation, invites, workspace changes, and cross-org access', async () => {
     const organizationId = randomUUID();
     const admin = identity(organizationId, 'admin');

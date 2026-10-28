@@ -63,13 +63,31 @@ export const buildLoginSuccessOutput = async (
     throw new Error('Heard-managed accounts cannot use native login.');
   }
 
-  const users = await database
+  const userRows = await database
     .selectFrom('users')
     .where('account_id', '=', account.id)
     .where('status', '=', UserStatus.Active)
     .where('role', '!=', 'none')
     .selectAll()
     .execute();
+  const mappedWorkspaces =
+    userRows.length > 0
+      ? await database
+          .selectFrom('heard_workspace_mappings')
+          .select('workspace_id')
+          .where(
+            'workspace_id',
+            'in',
+            userRows.map((user) => user.workspace_id)
+          )
+          .execute()
+      : [];
+  const mappedWorkspaceIds = new Set(
+    mappedWorkspaces.map((mapping) => mapping.workspace_id)
+  );
+  const users = userRows.filter(
+    (user) => !mappedWorkspaceIds.has(user.workspace_id)
+  );
 
   const workspaceOutputs: WorkspaceOutput[] = [];
   if (users.length > 0) {

@@ -8,7 +8,10 @@ import {
   WorkspaceStatus,
 } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
-import { getHeardWorkspaceForAccount } from '@colanode/server/lib/heard-mappings';
+import {
+  getHeardWorkspaceForAccount,
+  isHeardWorkspaceManaged,
+} from '@colanode/server/lib/heard-mappings';
 import { WorkspaceContext } from '@colanode/server/types/api';
 
 declare module 'fastify' {
@@ -43,7 +46,10 @@ const workspaceAuthenticatorCallback: FastifyPluginCallback = (
     const managedWorkspaceId = await getHeardWorkspaceForAccount(
       request.account.id
     );
-    if (managedWorkspaceId && managedWorkspaceId !== workspaceId) {
+    if (
+      (managedWorkspaceId && managedWorkspaceId !== workspaceId) ||
+      (!managedWorkspaceId && (await isHeardWorkspaceManaged(workspaceId)))
+    ) {
       return reply.code(403).send({
         code: ApiErrorCode.WorkspaceNoAccess,
         message: 'You do not have access to this workspace.',

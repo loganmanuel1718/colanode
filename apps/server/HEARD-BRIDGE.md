@@ -39,7 +39,9 @@ Unmapped Colanode accounts retain their existing routes.
   reset, change their local profile, create another workspace, or accept a
   native invitation to another workspace. Managed workspaces reject native
   invites, role updates, rename and deletion. Account sync, workspace routes
-  and socket user selection remain scoped to the mapped workspace.
+  and socket user selection remain scoped to the mapped workspace. A native
+  account with a pre-existing membership in a mapped workspace is also denied
+  and does not receive that workspace in login or sync output.
 
 ## Required before enabling
 
