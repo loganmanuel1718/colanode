@@ -53,10 +53,10 @@ Unmapped Colanode accounts retain their existing routes.
    backchannel identity. Never accept account, membership or workspace IDs from
    a browser. Review the permanent Kitchen ACL and native-route protections
    with two real accounts and a FOH denial account before enabling sign-in.
-3. Wire Heard organization and role changes, removal, and account disablement
-   to prompt, authenticated revocation/reconciliation. A successful one-time
-   code alone cannot provide continuous revocation. Define retry, replay and
-   outage behavior before issuing a persistent Colanode device token.
+3. Review and enable the private member lifecycle contract in
+   `HEARD-LIFECYCLE.md` only after its sender, ingress, ledger and canonical
+   resolver pass end-to-end tests. A successful one-time code alone cannot
+   provide continuous revocation.
 4. Run the PostgreSQL/Redis integration tests and two-device browser checks.
    The current Kitchen channel is empty by design. Historical Heard messages,
    Roux, notifications, photos and other current chat behavior must pass
