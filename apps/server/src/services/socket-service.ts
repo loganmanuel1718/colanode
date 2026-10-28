@@ -1,8 +1,10 @@
 import { WebSocket } from 'ws';
 
 import { generateId, IdType } from '@colanode/core';
+import { database } from '@colanode/server/data/database';
 import { redis } from '@colanode/server/data/redis';
 import { eventBus } from '@colanode/server/lib/event-bus';
+import { isHeardAccountActive } from '@colanode/server/lib/heard-mappings';
 import { SocketConnection } from '@colanode/server/services/socket-connection';
 import { ClientContext, AccountContext } from '@colanode/server/types/api';
 import { SocketContext } from '@colanode/server/types/sockets';
@@ -50,6 +52,19 @@ class SocketService {
   public async addConnection(id: string, socket: WebSocket): Promise<boolean> {
     const context = await this.fetchSocketContext(id);
     if (!context) {
+      return false;
+    }
+
+    const device = await database
+      .selectFrom('devices')
+      .select('account_id')
+      .where('id', '=', context.deviceId)
+      .executeTakeFirst();
+    if (
+      !device ||
+      device.account_id !== context.accountId ||
+      !(await isHeardAccountActive(context.accountId))
+    ) {
       return false;
     }
 

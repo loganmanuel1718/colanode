@@ -16,6 +16,10 @@ import {
 import { database } from '@colanode/server/data/database';
 import { SelectAccount } from '@colanode/server/data/schema';
 import { eventBus } from '@colanode/server/lib/event-bus';
+import {
+  isHeardAccountManaged,
+  isHeardWorkspaceManaged,
+} from '@colanode/server/lib/heard-mappings';
 import { getNameFromEmail } from '@colanode/server/lib/utils';
 import { jobService } from '@colanode/server/services/job-service';
 
@@ -44,6 +48,13 @@ export const usersCreateRoute: FastifyPluginCallbackZod = (
       const input = request.body;
       const workspace = request.workspace;
 
+      if (await isHeardWorkspaceManaged(workspaceId)) {
+        return reply.code(403).send({
+          code: ApiErrorCode.UserInviteNoAccess,
+          message: 'Heard manages invitations for this workspace.',
+        });
+      }
+
       if (workspace.status === WorkspaceStatus.Readonly) {
         return reply.code(403).send({
           code: ApiErrorCode.WorkspaceReadonly,
@@ -71,11 +82,19 @@ export const usersCreateRoute: FastifyPluginCallbackZod = (
       };
 
       for (const user of input.users) {
-        const account = await getOrCreateAccount(user.email);
+        const account = await getOrCreateAccount(user.email.trim().toLowerCase());
         if (!account) {
           output.errors.push({
             email: user.email,
             error: 'Account not found or could not be created.',
+          });
+          continue;
+        }
+
+        if (await isHeardAccountManaged(account.id)) {
+          output.errors.push({
+            email: user.email,
+            error: 'This account cannot be invited to another workspace.',
           });
           continue;
         }

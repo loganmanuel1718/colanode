@@ -32,6 +32,9 @@ import { addWorkspaceStorageLimitColumns } from './00029-add-workspace-storage-l
 import { addWorkspaceIndexToUploads } from './00030-add-workspace-index-to-uploads';
 import { addCreatedAtIndexToUploads } from './00031-add-created-at-index-to-uploads';
 import { cleanupCounterTriggers } from './00032-cleanup-counter-triggers';
+import { createHeardMappings } from './00033-create-heard-mappings';
+import { addKitchenNodeIds } from './00034-add-kitchen-node-ids';
+import { createHeardLifecycleLedger } from './00035-create-heard-lifecycle-ledger';
 
 export const databaseMigrations: Record<string, Migration> = {
   '00001_create_accounts_table': createAccountsTable,
@@ -70,4 +73,7 @@ export const databaseMigrations: Record<string, Migration> = {
   '00030_add_workspace_index_to_uploads': addWorkspaceIndexToUploads,
   '00031_add_created_at_index_to_uploads': addCreatedAtIndexToUploads,
   '00032_cleanup_counter_triggers': cleanupCounterTriggers,
+  '00033_create_heard_mappings': createHeardMappings,
+  '00034_add_kitchen_node_ids': addKitchenNodeIds,
+  '00035_create_heard_lifecycle_ledger': createHeardLifecycleLedger,
 };

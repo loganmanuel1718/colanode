@@ -21,7 +21,7 @@ import { AccountAttributes } from '@colanode/server/types/accounts';
 interface AccountTable {
   id: ColumnType<string, string, never>;
   name: ColumnType<string, string, string>;
-  email: ColumnType<string, string, never>;
+  email: ColumnType<string, string, string>;
   avatar: ColumnType<string | null, string | null, string | null>;
   password: ColumnType<string | null, string | null, string | null>;
   attributes: JSONColumnType<
@@ -99,6 +99,55 @@ interface UserTable {
 export type SelectUser = Selectable<UserTable>;
 export type CreateUser = Insertable<UserTable>;
 export type UpdateUser = Updateable<UserTable>;
+
+interface HeardWorkspaceMappingTable {
+  heard_organization_id: ColumnType<string, string, never>;
+  workspace_id: ColumnType<string, string, never>;
+  kitchen_space_id: ColumnType<
+    string | null,
+    string | null | undefined,
+    string | null
+  >;
+  kitchen_channel_id: ColumnType<
+    string | null,
+    string | null | undefined,
+    string | null
+  >;
+  created_at: ColumnType<Date, Date, never>;
+}
+
+interface HeardMemberMappingTable {
+  heard_user_id: ColumnType<string, string, never>;
+  heard_organization_id: ColumnType<string, string, never>;
+  account_id: ColumnType<string, string, never>;
+  user_id: ColumnType<string, string, never>;
+  created_at: ColumnType<Date, Date, never>;
+  revoked_at: ColumnType<Date | null, Date | null, Date | null>;
+}
+
+interface HeardMemberEventStateTable {
+  heard_user_id: ColumnType<string, string, never>;
+  heard_organization_id: ColumnType<string, string, string>;
+  last_version: ColumnType<string, string, string>;
+  last_event_id: ColumnType<string, string, string>;
+  last_action: ColumnType<
+    'revoke' | 'reconcile',
+    'revoke' | 'reconcile',
+    'revoke' | 'reconcile'
+  >;
+  updated_at: ColumnType<Date, Date, Date>;
+}
+
+interface HeardMemberEventReceiptTable {
+  event_id: ColumnType<string, string, never>;
+  heard_user_id: ColumnType<string, string, never>;
+  heard_organization_id: ColumnType<string, string, never>;
+  member_version: ColumnType<string, string, never>;
+  action: ColumnType<'revoke' | 'reconcile', 'revoke' | 'reconcile', never>;
+  occurred_at: ColumnType<string, string, never>;
+  outcome: ColumnType<'applied' | 'stale', 'applied' | 'stale', never>;
+  created_at: ColumnType<Date, Date, never>;
+}
 
 interface NodeTable {
   id: ColumnType<string, string, never>;
@@ -311,6 +360,10 @@ export interface DatabaseSchema {
   devices: DeviceTable;
   workspaces: WorkspaceTable;
   users: UserTable;
+  heard_workspace_mappings: HeardWorkspaceMappingTable;
+  heard_member_mappings: HeardMemberMappingTable;
+  heard_member_event_state: HeardMemberEventStateTable;
+  heard_member_event_receipts: HeardMemberEventReceiptTable;
   nodes: NodeTable;
   node_updates: NodeUpdateTable;
   node_interactions: NodeInteractionTable;

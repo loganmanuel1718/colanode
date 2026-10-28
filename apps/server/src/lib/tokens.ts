@@ -1,6 +1,7 @@
 import { sha256 } from 'js-sha256';
 
 import { database } from '@colanode/server/data/database';
+import { isHeardAccountActive } from '@colanode/server/lib/heard-mappings';
 import { uuid } from '@colanode/server/lib/utils';
 import { AccountContext } from '@colanode/server/types/api';
 
@@ -72,6 +73,10 @@ export const verifyToken = async (
     return {
       authenticated: false,
     };
+  }
+
+  if (!(await isHeardAccountActive(device.account_id))) {
+    return { authenticated: false };
   }
 
   return {
