@@ -1,3 +1,4 @@
+// Modified by Heard: prompt for an explicitly chosen self-hosted server.
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -40,7 +41,7 @@ export const ServerCreateDialog = ({ onCancel }: ServerCreateDialogProps) => {
         <div className="grow space-y-2 py-2 pb-4">
           <Label>Server URL</Label>
           <Input
-            placeholder="https://us.colanode.com/config"
+            placeholder="https://workspace.example.com/config"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
           />

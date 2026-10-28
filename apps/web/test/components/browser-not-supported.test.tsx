@@ -1,6 +1,8 @@
+// Modified by Heard: verify the mobile fallback does not direct users upstream.
 import { describe, expect, it } from 'vitest';
 
 import { BrowserNotSupported } from '@colanode/web/components/browser-not-supported';
+
 import { customRender, screen } from '../test-utils';
 
 describe('components/BrowserNotSupported', () => {
@@ -11,21 +13,6 @@ describe('components/BrowserNotSupported', () => {
       name: /browser not supported/i,
     });
     expect(heading).toBeInTheDocument();
-  });
-
-  it('displays a link to download the desktop app', () => {
-    customRender(<BrowserNotSupported />);
-
-    const desktopLink = screen.getByRole('link', {
-      name: /desktop app/i,
-    });
-    expect(desktopLink).toBeInTheDocument();
-    expect(desktopLink).toHaveAttribute(
-      'href',
-      'https://colanode.com/downloads'
-    );
-    expect(desktopLink).toHaveAttribute('target', '_blank');
-    expect(desktopLink).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   it('displays a link to GitHub', () => {

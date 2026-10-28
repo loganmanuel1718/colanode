@@ -1,3 +1,4 @@
+// Modified by Heard: keep the composer clear of the phone safe area.
 import { useEffect, useRef } from 'react';
 import { InView } from 'react-intersection-observer';
 
@@ -116,7 +117,7 @@ export const Conversation = ({
         >
           <div ref={bottomRef} className="h-4"></div>
         </InView>
-        <div className="sticky bottom-0 bg-background pb-4 pt-2">
+        <div className="sticky bottom-0 bg-background pb-[max(1rem,env(safe-area-inset-bottom))] pt-2">
           <MessageCreate ref={messageCreateRef} />
         </div>
       </div>

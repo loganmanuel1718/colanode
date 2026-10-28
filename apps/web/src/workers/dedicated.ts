@@ -1,3 +1,4 @@
+// Modified by Heard: use only an explicit server and report local initialization failures.
 import * as Comlink from 'comlink';
 
 import { eventBus } from '@colanode/client/lib';
@@ -9,13 +10,7 @@ import {
 import { QueryInput, QueryMap } from '@colanode/client/queries';
 import { AppMeta, AppService } from '@colanode/client/services';
 import { AppInitOutput } from '@colanode/client/types';
-import {
-  build,
-  extractFileSubtype,
-  generateId,
-  IdType,
-  isColanodeDomain,
-} from '@colanode/core';
+import { build, extractFileSubtype, generateId, IdType } from '@colanode/core';
 import {
   BroadcastInitMessage,
   BroadcastMessage,
@@ -44,90 +39,123 @@ broadcast.onmessage = (event) => {
   handleMessage(event.data);
 };
 
-navigator.locks.request('colanode', async () => {
-  const appMeta: AppMeta = {
-    type: 'web',
-    platform: navigator.userAgent,
-  };
+const failInitialization = (error: unknown) => {
+  console.error('Colanode | Local initialization failed', error);
+  app = null;
+  appInitOutput = 'error';
+  broadcast.postMessage({ type: 'init_result', result: 'error' });
 
-  const bootstrap = await WebBootstrapService.create(path, fs);
-  if (bootstrap.needsFreshInstall) {
-    appInitOutput = 'reset';
-
-    if (pendingPromises.has('init')) {
-      const promise = pendingPromises.get('init');
-      if (promise && promise.type === 'init') {
-        promise.resolve(appInitOutput);
-      }
+  for (const [id, pending] of pendingPromises) {
+    if (pending.type === 'init') {
+      pending.resolve('error');
+    } else {
+      pending.reject('Local workspace initialization failed');
     }
-
-    broadcastMessage({
-      type: 'init_result',
-      result: appInitOutput,
-    });
-
-    return;
-  }
-
-  app = new AppService(appMeta, fs, new WebKyselyService(), path);
-
-  await app.migrate();
-  await app.init();
-  await bootstrap.updateVersion(build.version);
-
-  await app.metadata.set('app', 'version', build.version);
-  await app.metadata.set('app', 'platform', appMeta.platform);
-
-  const domain = self.location.hostname;
-  if (isColanodeDomain(domain)) {
-    await app.createServer(new URL('https://eu.colanode.com/config'));
-    await app.createServer(new URL('https://us.colanode.com/config'));
-  }
-
-  appInitOutput = 'success';
-
-  broadcastMessage({
-    type: 'init_result',
-    result: appInitOutput,
-  });
-
-  const ids = Array.from(pendingPromises.keys());
-  for (const id of ids) {
-    const promise = pendingPromises.get(id);
-    if (!promise) {
-      continue;
-    }
-
-    if (promise.type === 'init') {
-      promise.resolve(appInitOutput);
-    } else if (promise.type === 'query') {
-      const result = await app.mediator.executeQuery(promise.input);
-      promise.resolve(result);
-    } else if (promise.type === 'query_and_subscribe') {
-      const result = await app.mediator.executeQueryAndSubscribe(
-        promise.key,
-        promise.windowId,
-        promise.input
-      );
-      promise.resolve(result);
-    } else if (promise.type === 'mutation') {
-      const result = await app.mediator.executeMutation(promise.input);
-      promise.resolve(result);
-    }
-
     pendingPromises.delete(id);
   }
+};
 
-  eventBus.subscribe((event) => {
-    broadcastMessage({
-      type: 'event',
-      windowId,
-      event,
-    });
-  });
+if (!navigator.locks?.request) {
+  failInitialization(new Error('Web Locks API unavailable'));
+} else {
+  void navigator.locks
+    .request('colanode', async () => {
+      const appMeta: AppMeta = {
+        type: 'web',
+        platform: navigator.userAgent,
+      };
 
-  await new Promise(() => {});
-});
+      const bootstrap = await WebBootstrapService.create(path, fs);
+      if (bootstrap.needsFreshInstall) {
+        appInitOutput = 'reset';
+
+        if (pendingPromises.has('init')) {
+          const promise = pendingPromises.get('init');
+          if (promise && promise.type === 'init') {
+            promise.resolve(appInitOutput);
+          }
+        }
+
+        broadcastMessage({
+          type: 'init_result',
+          result: appInitOutput,
+        });
+
+        return;
+      }
+
+      app = new AppService(appMeta, fs, new WebKyselyService(), path);
+
+      await app.migrate();
+      await app.init();
+      await bootstrap.updateVersion(build.version);
+
+      await app.metadata.set('app', 'version', build.version);
+      await app.metadata.set('app', 'platform', appMeta.platform);
+
+      // Only connect to a server chosen by the deployer. Never add upstream cloud
+      // servers implicitly in the Heard fork.
+      const defaultServerConfigUrl = import.meta.env
+        .VITE_DEFAULT_SERVER_CONFIG_URL;
+      if (defaultServerConfigUrl) {
+        const configUrl = new URL(defaultServerConfigUrl);
+        if (
+          configUrl.protocol !== 'https:' &&
+          !(
+            configUrl.protocol === 'http:' && configUrl.hostname === 'localhost'
+          )
+        ) {
+          throw new Error('Default server config URL must use HTTPS');
+        }
+        await app.createServer(configUrl);
+      }
+
+      appInitOutput = 'success';
+
+      broadcastMessage({
+        type: 'init_result',
+        result: appInitOutput,
+      });
+
+      const ids = Array.from(pendingPromises.keys());
+      for (const id of ids) {
+        const promise = pendingPromises.get(id);
+        if (!promise) {
+          continue;
+        }
+
+        if (promise.type === 'init') {
+          promise.resolve(appInitOutput);
+        } else if (promise.type === 'query') {
+          const result = await app.mediator.executeQuery(promise.input);
+          promise.resolve(result);
+        } else if (promise.type === 'query_and_subscribe') {
+          const result = await app.mediator.executeQueryAndSubscribe(
+            promise.key,
+            promise.windowId,
+            promise.input
+          );
+          promise.resolve(result);
+        } else if (promise.type === 'mutation') {
+          const result = await app.mediator.executeMutation(promise.input);
+          promise.resolve(result);
+        }
+
+        pendingPromises.delete(id);
+      }
+
+      eventBus.subscribe((event) => {
+        broadcastMessage({
+          type: 'event',
+          windowId,
+          event,
+        });
+      });
+
+      await new Promise(() => {});
+    })
+    .catch(failInitialization);
+}
 
 const broadcastMessage = (message: BroadcastMessage) => {
   broadcast.postMessage(message);

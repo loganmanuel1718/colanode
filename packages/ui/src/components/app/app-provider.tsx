@@ -1,3 +1,4 @@
+// Modified by Heard: show a recoverable error when local web initialization fails.
 import { useEffect, useState } from 'react';
 
 import { AppInitOutput, AppType } from '@colanode/client/types';
@@ -21,23 +22,29 @@ export const AppProvider = ({ type }: AppProviderProps) => {
   useEffect(() => {
     console.log(`Colanode | Version: ${build.version} | SHA: ${build.sha}`);
 
-    window.colanode.init().then((output) => {
-      console.log('Colanode | Initialized');
+    window.colanode
+      .init()
+      .then((output) => {
+        console.log('Colanode | Initialized');
 
-      if (output === 'success') {
-        collections
-          .preload()
-          .then(() => {
-            setInitOutput('success');
-          })
-          .catch((err) => {
-            setInitOutput('error');
-            console.error('Colanode | Error preloading', err);
-          });
-      } else {
-        setInitOutput(output);
-      }
-    });
+        if (output === 'success') {
+          collections
+            .preload()
+            .then(() => {
+              setInitOutput('success');
+            })
+            .catch((err) => {
+              setInitOutput('error');
+              console.error('Colanode | Error preloading', err);
+            });
+        } else {
+          setInitOutput(output);
+        }
+      })
+      .catch((err) => {
+        setInitOutput('error');
+        console.error('Colanode | Error initializing', err);
+      });
   }, []);
 
   return (
@@ -46,6 +53,28 @@ export const AppProvider = ({ type }: AppProviderProps) => {
         <AppAssets />
         {initOutput === null && <AppLoading />}
         {initOutput === 'reset' && <AppReset />}
+        {initOutput === 'error' && (
+          <div
+            className="flex h-full w-full items-center justify-center p-6"
+            role="alert"
+          >
+            <div className="flex max-w-sm flex-col items-center gap-4 text-center">
+              <h2 className="text-2xl font-semibold">
+                Could not open the workspace
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Check that browser storage is available, then reload this page.
+              </p>
+              <button
+                type="button"
+                className="min-h-11 rounded-md border px-4"
+                onClick={() => window.location.reload()}
+              >
+                Reload
+              </button>
+            </div>
+          </div>
+        )}
         {initOutput === 'success' && (
           <RadarProvider>
             <AppLayout type={type} />

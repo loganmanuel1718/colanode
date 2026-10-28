@@ -1,3 +1,4 @@
+// Modified by Heard: provide a phone-sized navigation target in the web workspace.
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useLocation } from '@tanstack/react-router';
 import { Menu } from 'lucide-react';
@@ -27,8 +28,11 @@ export const SidebarMobile = () => {
         <SheetDescription>Colanode sidebar for mobile devices</SheetDescription>
       </VisuallyHidden>
       <SheetTrigger asChild>
-        <button className="px-2 outline-none" aria-label="Open sidebar">
-          <Menu className="size-4 text-muted-foreground" />
+        <button
+          className="flex size-11 items-center justify-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="Open sidebar"
+        >
+          <Menu className="size-5 text-muted-foreground" />
         </button>
       </SheetTrigger>
       <SheetContent
