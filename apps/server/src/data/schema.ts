@@ -125,6 +125,30 @@ interface HeardMemberMappingTable {
   revoked_at: ColumnType<Date | null, Date | null, Date | null>;
 }
 
+interface HeardMemberEventStateTable {
+  heard_user_id: ColumnType<string, string, never>;
+  heard_organization_id: ColumnType<string, string, string>;
+  last_version: ColumnType<string, string, string>;
+  last_event_id: ColumnType<string, string, string>;
+  last_action: ColumnType<
+    'revoke' | 'reconcile',
+    'revoke' | 'reconcile',
+    'revoke' | 'reconcile'
+  >;
+  updated_at: ColumnType<Date, Date, Date>;
+}
+
+interface HeardMemberEventReceiptTable {
+  event_id: ColumnType<string, string, never>;
+  heard_user_id: ColumnType<string, string, never>;
+  heard_organization_id: ColumnType<string, string, never>;
+  member_version: ColumnType<string, string, never>;
+  action: ColumnType<'revoke' | 'reconcile', 'revoke' | 'reconcile', never>;
+  occurred_at: ColumnType<string, string, never>;
+  outcome: ColumnType<'applied' | 'stale', 'applied' | 'stale', never>;
+  created_at: ColumnType<Date, Date, never>;
+}
+
 interface NodeTable {
   id: ColumnType<string, string, never>;
   type: ColumnType<NodeType, never, never>;
@@ -338,6 +362,8 @@ export interface DatabaseSchema {
   users: UserTable;
   heard_workspace_mappings: HeardWorkspaceMappingTable;
   heard_member_mappings: HeardMemberMappingTable;
+  heard_member_event_state: HeardMemberEventStateTable;
+  heard_member_event_receipts: HeardMemberEventReceiptTable;
   nodes: NodeTable;
   node_updates: NodeUpdateTable;
   node_interactions: NodeInteractionTable;
