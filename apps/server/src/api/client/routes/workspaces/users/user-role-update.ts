@@ -11,6 +11,7 @@ import {
 } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
 import { eventBus } from '@colanode/server/lib/event-bus';
+import { isHeardWorkspaceManaged } from '@colanode/server/lib/heard-mappings';
 
 export const userRoleUpdateRoute: FastifyPluginCallbackZod = (
   instance,
@@ -36,6 +37,13 @@ export const userRoleUpdateRoute: FastifyPluginCallbackZod = (
       const userId = request.params.userId;
       const input = request.body;
       const workspace = request.workspace;
+
+      if (await isHeardWorkspaceManaged(workspace.id)) {
+        return reply.code(403).send({
+          code: ApiErrorCode.UserUpdateNoAccess,
+          message: 'Heard manages membership roles for this workspace.',
+        });
+      }
 
       if (workspace.status === WorkspaceStatus.Readonly) {
         return reply.code(403).send({

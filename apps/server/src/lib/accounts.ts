@@ -14,7 +14,7 @@ import {
 import { database } from '@colanode/server/data/database';
 import { SelectAccount } from '@colanode/server/data/schema';
 import { config } from '@colanode/server/lib/config';
-import { isHeardAccountActive } from '@colanode/server/lib/heard-mappings';
+import { isHeardAccountManaged } from '@colanode/server/lib/heard-mappings';
 import {
   deleteOtp,
   fetchOtp,
@@ -59,8 +59,8 @@ export const buildLoginSuccessOutput = async (
   account: SelectAccount,
   client: ClientContext
 ): Promise<LoginSuccessOutput> => {
-  if (!(await isHeardAccountActive(account.id))) {
-    throw new Error('Account access has been revoked.');
+  if (await isHeardAccountManaged(account.id)) {
+    throw new Error('Heard-managed accounts cannot use native login.');
   }
 
   const users = await database
@@ -103,14 +103,6 @@ export const buildLoginSuccessOutput = async (
   }
 
   if (workspaceOutputs.length === 0) {
-    const heardMapping = await database
-      .selectFrom('heard_member_mappings')
-      .select('heard_user_id')
-      .where('account_id', '=', account.id)
-      .executeTakeFirst();
-    if (heardMapping) {
-      throw new Error('Heard account has no active workspace.');
-    }
     const workspace = await createDefaultWorkspace(account);
     workspaceOutputs.push(workspace);
   }

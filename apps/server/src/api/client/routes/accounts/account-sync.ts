@@ -10,6 +10,7 @@ import {
   apiErrorOutputSchema,
 } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
+import { getHeardWorkspaceForAccount } from '@colanode/server/lib/heard-mappings';
 
 export const accountSyncRoute: FastifyPluginCallbackZod = (
   instance,
@@ -69,13 +70,17 @@ export const accountSyncRoute: FastifyPluginCallbackZod = (
       }
 
       const workspaceOutputs: WorkspaceOutput[] = [];
-      const users = await database
+      const managedWorkspaceId = await getHeardWorkspaceForAccount(account.id);
+      const allUsers = await database
         .selectFrom('users')
         .where('account_id', '=', account.id)
         .where('status', '=', UserStatus.Active)
         .where('role', '!=', 'none')
         .selectAll()
         .execute();
+      const users = managedWorkspaceId
+        ? allUsers.filter((user) => user.workspace_id === managedWorkspaceId)
+        : allUsers;
 
       if (users.length > 0) {
         const workspaceIds = users.map((u) => u.workspace_id);

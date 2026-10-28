@@ -14,6 +14,7 @@ import {
   verifyPassword,
 } from '@colanode/server/lib/accounts';
 import { config } from '@colanode/server/lib/config';
+import { isHeardAccountManaged } from '@colanode/server/lib/heard-mappings';
 import { isAuthEmailRateLimited } from '@colanode/server/lib/rate-limits';
 
 export const emailLoginRoute: FastifyPluginCallbackZod = (
@@ -51,7 +52,11 @@ export const emailLoginRoute: FastifyPluginCallbackZod = (
         .selectAll()
         .executeTakeFirst();
 
-      if (!account || !account.password) {
+      if (
+        !account ||
+        !account.password ||
+        (await isHeardAccountManaged(account.id))
+      ) {
         return reply.code(400).send({
           code: ApiErrorCode.EmailOrPasswordIncorrect,
           message: 'Invalid email or password.',

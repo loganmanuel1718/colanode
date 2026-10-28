@@ -9,6 +9,7 @@ import {
 } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
 import { eventBus } from '@colanode/server/lib/event-bus';
+import { isHeardAccountManaged } from '@colanode/server/lib/heard-mappings';
 
 export const accountUpdateRoute: FastifyPluginCallbackZod = (
   instance,
@@ -23,12 +24,20 @@ export const accountUpdateRoute: FastifyPluginCallbackZod = (
       response: {
         200: accountUpdateOutputSchema,
         400: apiErrorOutputSchema,
+        403: apiErrorOutputSchema,
         404: apiErrorOutputSchema,
         401: apiErrorOutputSchema,
       },
     },
     handler: async (request, reply) => {
       const input = request.body;
+
+      if (await isHeardAccountManaged(request.account.id)) {
+        return reply.code(403).send({
+          code: ApiErrorCode.Forbidden,
+          message: 'This account is managed by Heard.',
+        });
+      }
 
       const account = await database
         .selectFrom('accounts')

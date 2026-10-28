@@ -9,6 +9,7 @@ import {
   WorkspaceStatus,
 } from '@colanode/core';
 import { updateDocumentFromMutation } from '@colanode/server/lib/documents';
+import { isProtectedKitchenNode } from '@colanode/server/lib/heard-kitchen';
 import {
   markNodeAsOpened,
   markNodeAsSeen,
@@ -73,6 +74,12 @@ const handleMutation = async (
   workspace: WorkspaceContext,
   mutation: Mutation
 ): Promise<MutationStatus> => {
+  if (
+    (mutation.type === 'node.update' || mutation.type === 'node.delete') &&
+    (await isProtectedKitchenNode(workspace.id, mutation.data.nodeId))
+  ) {
+    return MutationStatus.FORBIDDEN;
+  }
   if (mutation.type === 'node.create') {
     return await createNodeFromMutation(workspace, mutation.data);
   } else if (mutation.type === 'node.update') {
