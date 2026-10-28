@@ -12,6 +12,7 @@ import {
 } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
 import { config } from '@colanode/server/lib/config';
+import { isHeardAccountManaged } from '@colanode/server/lib/heard-mappings';
 import { generateOtpCode, saveOtp } from '@colanode/server/lib/otps';
 import { isAuthEmailRateLimited } from '@colanode/server/lib/rate-limits';
 import { jobService } from '@colanode/server/services/job-service';
@@ -60,7 +61,7 @@ export const emailPasswordResetInitRoute: FastifyPluginCallbackZod = (
         .where('email', '=', email)
         .executeTakeFirst();
 
-      if (!account) {
+      if (!account || (await isHeardAccountManaged(account.id))) {
         const output: EmailPasswordResetInitOutput = {
           id,
           expiresAt,

@@ -13,6 +13,7 @@ import {
   generatePasswordHash,
   verifyOtpCode,
 } from '@colanode/server/lib/accounts';
+import { isHeardAccountManaged } from '@colanode/server/lib/heard-mappings';
 
 export const emailPasswordResetCompleteRoute: FastifyPluginCallbackZod = (
   instance,
@@ -48,7 +49,7 @@ export const emailPasswordResetCompleteRoute: FastifyPluginCallbackZod = (
         .where('id', '=', accountId)
         .executeTakeFirst();
 
-      if (!account) {
+      if (!account || (await isHeardAccountManaged(account.id))) {
         return reply.code(400).send({
           code: ApiErrorCode.AccountOtpInvalid,
           message: 'Invalid or expired code. Please request a new code.',

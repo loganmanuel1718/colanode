@@ -12,6 +12,7 @@ import {
   buildLoginSuccessOutput,
   verifyOtpCode,
 } from '@colanode/server/lib/accounts';
+import { isHeardAccountManaged } from '@colanode/server/lib/heard-mappings';
 
 export const emailVerifyRoute: FastifyPluginCallbackZod = (
   instance,
@@ -35,6 +36,14 @@ export const emailVerifyRoute: FastifyPluginCallbackZod = (
       const accountId = await verifyOtpCode(input.id, input.otp);
 
       if (!accountId) {
+        return reply.code(400).send({
+          code: ApiErrorCode.AccountOtpInvalid,
+          message:
+            'Invalid or expired OTP code. Please request a new OTP code.',
+        });
+      }
+
+      if (await isHeardAccountManaged(accountId)) {
         return reply.code(400).send({
           code: ApiErrorCode.AccountOtpInvalid,
           message:

@@ -8,6 +8,7 @@ import {
 } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
 import { eventBus } from '@colanode/server/lib/event-bus';
+import { isHeardWorkspaceManaged } from '@colanode/server/lib/heard-mappings';
 import { jobService } from '@colanode/server/services/job-service';
 
 export const workspaceDeleteRoute: FastifyPluginCallbackZod = (
@@ -31,6 +32,13 @@ export const workspaceDeleteRoute: FastifyPluginCallbackZod = (
     },
     handler: async (request, reply) => {
       const workspaceId = request.params.workspaceId;
+
+      if (await isHeardWorkspaceManaged(workspaceId)) {
+        return reply.code(403).send({
+          code: ApiErrorCode.WorkspaceDeleteNotAllowed,
+          message: 'Heard manages this workspace.',
+        });
+      }
 
       if (request.workspace.user.role !== 'owner') {
         return reply.code(403).send({

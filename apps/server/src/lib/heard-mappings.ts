@@ -1,16 +1,12 @@
 import { UserStatus, WorkspaceStatus } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
 import { eventBus } from '@colanode/server/lib/event-bus';
+import { HeardMappingConflict } from '@colanode/server/lib/heard-error';
 import { HeardIdentity } from '@colanode/server/lib/heard-identity';
+import { removeKitchenMemberRole } from '@colanode/server/lib/heard-kitchen';
 import { heardWorkspaceRole } from '@colanode/server/lib/heard-mapping-policy';
 
-export class HeardMappingConflict extends Error {
-  constructor() {
-    super(
-      'Heard identity mapping conflicts with an existing account or workspace'
-    );
-  }
-}
+export { HeardMappingConflict } from '@colanode/server/lib/heard-error';
 
 /** An administrator binds one existing workspace to exactly one Heard organization. */
 export const bindHeardOrganization = async (
@@ -73,6 +69,37 @@ export const resolveHeardWorkspace = async (
     return null;
   }
   return mapping.workspace_id;
+};
+
+export const getHeardWorkspaceForAccount = async (
+  accountId: string
+): Promise<string | null> => {
+  const mapping = await database
+    .selectFrom('heard_member_mappings')
+    .innerJoin(
+      'heard_workspace_mappings',
+      'heard_member_mappings.heard_organization_id',
+      'heard_workspace_mappings.heard_organization_id'
+    )
+    .select('heard_workspace_mappings.workspace_id as workspace_id')
+    .where('heard_member_mappings.account_id', '=', accountId)
+    .executeTakeFirst();
+  return mapping?.workspace_id ?? null;
+};
+
+export const isHeardAccountManaged = async (
+  accountId: string
+): Promise<boolean> => (await getHeardWorkspaceForAccount(accountId)) !== null;
+
+export const isHeardWorkspaceManaged = async (
+  workspaceId: string
+): Promise<boolean> => {
+  const mapping = await database
+    .selectFrom('heard_workspace_mappings')
+    .select('workspace_id')
+    .where('workspace_id', '=', workspaceId)
+    .executeTakeFirst();
+  return mapping !== undefined;
 };
 
 /**
@@ -226,6 +253,7 @@ export const revokeHeardMember = async (
         'heard_member_mappings.user_id as user_id',
         'heard_member_mappings.revoked_at as revoked_at',
         'heard_workspace_mappings.workspace_id as workspace_id',
+        'heard_workspace_mappings.kitchen_space_id as kitchen_space_id',
       ])
       .where('heard_member_mappings.heard_organization_id', '=', organizationId)
       .where('heard_user_id', '=', heardUserId)
@@ -274,6 +302,13 @@ export const revokeHeardMember = async (
       accountId: outcome.account_id,
       workspaceId: outcome.workspace_id,
     });
+  }
+  if (outcome.kitchen_space_id) {
+    await removeKitchenMemberRole(
+      outcome.kitchen_space_id,
+      outcome.workspace_id,
+      outcome.user_id
+    );
   }
 };
 

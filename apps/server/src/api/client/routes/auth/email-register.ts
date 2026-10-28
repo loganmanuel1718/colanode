@@ -17,6 +17,7 @@ import {
   generatePasswordHash,
 } from '@colanode/server/lib/accounts';
 import { config } from '@colanode/server/lib/config';
+import { isHeardAccountManaged } from '@colanode/server/lib/heard-mappings';
 import { isAuthEmailRateLimited } from '@colanode/server/lib/rate-limits';
 
 export const emailRegisterRoute: FastifyPluginCallbackZod = (
@@ -63,7 +64,10 @@ export const emailRegisterRoute: FastifyPluginCallbackZod = (
           : AccountStatus.Unverified;
 
       if (existingAccount) {
-        if (existingAccount.status !== AccountStatus.Pending) {
+        if (
+          existingAccount.status !== AccountStatus.Pending ||
+          (await isHeardAccountManaged(existingAccount.id))
+        ) {
           return reply.code(400).send({
             code: ApiErrorCode.EmailAlreadyExists,
             message: 'Email already exists. Login or use another email.',

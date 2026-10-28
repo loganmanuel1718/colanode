@@ -21,7 +21,7 @@ import { AccountAttributes } from '@colanode/server/types/accounts';
 interface AccountTable {
   id: ColumnType<string, string, never>;
   name: ColumnType<string, string, string>;
-  email: ColumnType<string, string, never>;
+  email: ColumnType<string, string, string>;
   avatar: ColumnType<string | null, string | null, string | null>;
   password: ColumnType<string | null, string | null, string | null>;
   attributes: JSONColumnType<
@@ -103,6 +103,16 @@ export type UpdateUser = Updateable<UserTable>;
 interface HeardWorkspaceMappingTable {
   heard_organization_id: ColumnType<string, string, never>;
   workspace_id: ColumnType<string, string, never>;
+  kitchen_space_id: ColumnType<
+    string | null,
+    string | null | undefined,
+    string | null
+  >;
+  kitchen_channel_id: ColumnType<
+    string | null,
+    string | null | undefined,
+    string | null
+  >;
   created_at: ColumnType<Date, Date, never>;
 }
 
