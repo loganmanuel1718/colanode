@@ -1,3 +1,4 @@
+// Modified by Heard: share the phone-accessible database view header.
 import { Fragment } from 'react';
 
 import { ViewFilterButton } from '@colanode/ui/components/databases/search/view-filter-button';
@@ -8,20 +9,21 @@ import { TableViewHeader } from '@colanode/ui/components/databases/tables/table-
 import { TableViewRecordCreateRow } from '@colanode/ui/components/databases/tables/table-view-record-create-row';
 import { TableViewSettings } from '@colanode/ui/components/databases/tables/table-view-settings';
 import { ViewFullscreenButton } from '@colanode/ui/components/databases/view-fullscreen-button';
-import { ViewTabs } from '@colanode/ui/components/databases/view-tabs';
+import { ViewHeader } from '@colanode/ui/components/databases/view-header';
 
 export const TableView = () => {
   return (
     <Fragment>
-      <div className="flex flex-row justify-between border-b">
-        <ViewTabs />
-        <div className="invisible flex flex-row items-center justify-end group-hover/database:visible">
-          <ViewFullscreenButton />
-          <TableViewSettings />
-          <ViewSortButton />
-          <ViewFilterButton />
-        </div>
-      </div>
+      <ViewHeader
+        actions={
+          <>
+            <ViewFullscreenButton />
+            <TableViewSettings />
+            <ViewSortButton />
+            <ViewFilterButton />
+          </>
+        }
+      />
       <ViewSearchBar />
       <div className="mt-2 w-full min-w-full max-w-full overflow-auto pr-5">
         <TableViewHeader />
