@@ -1,3 +1,4 @@
+// Modified by Heard: scroll view choices within a narrow database header.
 import { ViewCreateButton } from '@colanode/ui/components/databases/view-create-button';
 import { ViewTab } from '@colanode/ui/components/databases/view-tab';
 import { useDatabase } from '@colanode/ui/contexts/database';
@@ -8,7 +9,7 @@ export const ViewTabs = () => {
   const databaseViews = useDatabaseViews();
 
   return (
-    <div className="flex flex-row items-center gap-3">
+    <div className="flex min-w-0 w-full items-center gap-3 overflow-x-auto overscroll-x-contain whitespace-nowrap sm:w-auto sm:flex-1">
       {databaseViews.views.map((view) => (
         <ViewTab
           key={view.id}

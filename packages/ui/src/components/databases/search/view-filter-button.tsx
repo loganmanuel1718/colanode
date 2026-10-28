@@ -1,3 +1,4 @@
+// Modified by Heard: keep filtering reachable by touch in the mobile view header.
 import { Filter } from 'lucide-react';
 
 import { ViewFilterAddPopover } from '@colanode/ui/components/databases/search/view-filter-add-popover';
@@ -9,7 +10,9 @@ export const ViewFilterButton = () => {
   if (view.filters.length > 0) {
     return (
       <button
-        className="flex cursor-pointer items-center rounded-md p-1.5 hover:bg-accent"
+        type="button"
+        aria-label="Show filters"
+        className="flex size-11 cursor-pointer items-center justify-center rounded-md hover:bg-accent sm:size-auto sm:p-1.5"
         onClick={() => view.openSearchBar()}
       >
         <Filter className="size-4" />
@@ -19,7 +22,11 @@ export const ViewFilterButton = () => {
 
   return (
     <ViewFilterAddPopover>
-      <button className="flex cursor-pointer items-center rounded-md p-1.5 hover:bg-accent">
+      <button
+        type="button"
+        aria-label="Add filter"
+        className="flex size-11 cursor-pointer items-center justify-center rounded-md hover:bg-accent sm:size-auto sm:p-1.5"
+      >
         <Filter className="size-4" />
       </button>
     </ViewFilterAddPopover>
