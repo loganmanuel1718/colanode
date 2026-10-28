@@ -6,6 +6,7 @@ import { accountConfigSchema } from './account';
 import { aiConfigSchema } from './ai';
 import { corsSchema } from './cors';
 import { emailConfigSchema } from './email';
+import { heardConfigSchema } from './heard';
 import { jobsConfigSchema } from './jobs';
 import { loggingConfigSchema } from './logging';
 import { postgresConfigSchema } from './postgres';
@@ -38,6 +39,7 @@ const configSchema = z.object({
   redis: redisConfigSchema,
   storage: storageConfigSchema,
   email: emailConfigSchema,
+  heard: heardConfigSchema,
   ai: aiConfigSchema,
   jobs: jobsConfigSchema,
   logging: loggingConfigSchema,
