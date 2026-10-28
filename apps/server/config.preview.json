@@ -1,0 +1,36 @@
+{
+  "name": "Heard Workspace Private Preview",
+  "mode": "standalone",
+  "cors": {
+    "origin": "env://COLANODE_WEB_ORIGIN"
+  },
+  "account": {
+    "verificationType": "manual",
+    "google": {
+      "enabled": false
+    }
+  },
+  "postgres": {
+    "url": "env://POSTGRES_URL"
+  },
+  "redis": {
+    "url": "env://REDIS_URL"
+  },
+  "storage": {
+    "tus": {
+      "locker": {
+        "type": "redis"
+      }
+    },
+    "provider": {
+      "type": "file",
+      "directory": "/data"
+    }
+  },
+  "email": {
+    "enabled": false
+  },
+  "logging": {
+    "level": "info"
+  }
+}
