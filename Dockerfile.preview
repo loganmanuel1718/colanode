@@ -1,0 +1,18 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Build from the monorepo root so npm can resolve workspace packages.
+COPY . .
+RUN npm ci --no-audit --no-fund \
+    && npm run build -w @colanode/core \
+    && npm run build -w @colanode/crdt \
+    && npm run build -w @colanode/server \
+    && npm prune --omit=dev
+
+ENV NODE_ENV=production \
+    CONFIG=/app/apps/server/config.preview.json \
+    PORT=3000
+
+EXPOSE 3000
+CMD ["node", "apps/server/dist/index.js"]

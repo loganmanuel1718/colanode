@@ -1,0 +1,48 @@
+# Optional Render fallback for the isolated, private server preview.
+# Syncing this Blueprint creates paid resources; review the monthly estimate in
+# apps/server/PREVIEW-DEPLOYMENT.md first. It does not expose a public web URL.
+services:
+  - type: pserv
+    name: heard-colanode-private-preview
+    runtime: docker
+    region: ohio
+    plan: 1c-2g
+    repo: https://github.com/loganmanuel1718/colanode
+    branch: feat/hea-277-private-preview-packaging
+    autoDeployTrigger: off
+    dockerfilePath: ./Dockerfile.preview
+    dockerContext: .
+    numInstances: 1
+    disk:
+      name: heard-colanode-preview-files
+      mountPath: /data
+      sizeGB: 5
+    envVars:
+      - key: POSTGRES_URL
+        fromDatabase:
+          name: heard-colanode-preview-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: heard-colanode-preview-kv
+          property: connectionString
+      - key: COLANODE_WEB_ORIGIN
+        value: https://heard-colanode-mobile-preview-hteo6b99b.vercel.app
+
+  - type: keyvalue
+    name: heard-colanode-preview-kv
+    region: ohio
+    plan: 256mb
+    maxmemoryPolicy: noeviction
+    persistenceMode: journal-snapshot
+    ipAllowList: []
+
+databases:
+  - name: heard-colanode-preview-db
+    databaseName: colanode_preview
+    user: colanode_preview
+    postgresMajorVersion: '17'
+    region: ohio
+    plan: 0.5c-1g
+    ipAllowList: []
