@@ -33,8 +33,14 @@ service references. Leave the server without a public domain.
 
 If Railway account creation is unavailable, Render can use its PostgreSQL
 `pgvector` extension, Key Value service, private service, and persistent disk
-with the same image and config. Keep the service private there as well. A
-public domain and browser connection are separate, later rollout steps.
+with the same image and config. The optional root `render.yaml` describes one
+private service, one database, one Key Value instance, and a 5 GB disk in Ohio.
+It has no public domain and disables automatic deploys. On Render's published
+October 2026 rates, those selected plans total about **US$55.25/month** before
+bandwidth, extra database storage, workspace fees, and tax: US$25 for the
+server, US$19 for PostgreSQL, US$10 for Key Value, and US$1.25 for the disk.
+The Blueprint is not applied by this PR; review the exact price before syncing
+it. A public domain and browser connection are separate, later rollout steps.
 
 ## Verification before a browser connection
 
