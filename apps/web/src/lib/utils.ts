@@ -1,3 +1,4 @@
+// Modified by Heard: gate mobile web by required browser capabilities rather than user agent.
 export const isOpfsSupported = async (): Promise<boolean> => {
   try {
     // Check if the storage API exists
@@ -17,9 +18,14 @@ export const isOpfsSupported = async (): Promise<boolean> => {
   }
 };
 
-const mobileDeviceRegex =
-  /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i;
+export const isWebRuntimeSupported = async (): Promise<boolean> => {
+  if (
+    typeof Worker === 'undefined' ||
+    typeof BroadcastChannel === 'undefined' ||
+    !navigator.locks?.request
+  ) {
+    return false;
+  }
 
-export const isMobileDevice = (): boolean => {
-  return mobileDeviceRegex.test(navigator.userAgent);
+  return isOpfsSupported();
 };

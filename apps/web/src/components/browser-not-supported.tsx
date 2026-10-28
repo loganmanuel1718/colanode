@@ -1,32 +1,24 @@
+// Modified by Heard: explain the mobile web runtime requirements on narrow screens.
 import { MonitorOff } from 'lucide-react';
 
 export const BrowserNotSupported = () => {
   return (
-    <div className="min-w-screen flex h-full min-h-screen w-full items-center justify-center">
-      <div className="flex flex-col items-center gap-8 text-center w-lg">
+    <div className="flex min-h-dvh w-full items-center justify-center px-6 py-8">
+      <div className="flex w-full max-w-lg flex-col items-center gap-6 text-center">
         <MonitorOff className="h-10 w-10 text-foreground" />
         <h2 className="text-4xl text-foreground">Browser not supported</h2>
         <p className="text-sm text-muted-foreground">
-          Unfortunately, your browser does not support the Origin Private File
-          System (OPFS) feature that Colanode requires to function properly.
+          This browser is missing a local storage or background-worker feature
+          that the workspace needs. Try an up-to-date browser with storage
+          enabled.
         </p>
         <p className="text-sm text-muted-foreground">
-          If you're self-hosting Colanode make sure you are accessing the web
-          version through a secure 'https' way, because some browsers require
-          HTTPS to use the features required.
+          If you host this workspace, open it over HTTPS so the browser can use
+          local storage and background workers.
         </p>
         <p className="text-sm text-muted-foreground mt-4">
-          You can try using the{' '}
-          <a
-            href="https://colanode.com/downloads"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary"
-          >
-            Desktop app
-          </a>{' '}
-          instead or try another browser. If you think this is a mistake or you
-          have any questions, please open an issue on{' '}
+          Try another browser. If you think this is a mistake, please open an
+          issue on{' '}
           <a
             href="https://github.com/colanode/colanode"
             target="_blank"

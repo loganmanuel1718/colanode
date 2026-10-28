@@ -1,3 +1,4 @@
+// Modified by Heard: make chat composer actions reachable on a phone.
 import { JSONContent } from '@tiptap/core';
 import { Plus, Search, Send, Upload } from 'lucide-react';
 import {
@@ -123,11 +124,12 @@ export const MessageCreate = forwardRef<MessageCreateRefProps>((_, ref) => {
         />
       )}
       <div className="flex min-h-0 flex-row items-center rounded bg-muted p-2 pl-0">
-        <div className="flex w-10 items-center justify-center">
+        <div className="flex items-center justify-center">
           <DropdownMenu>
             <DropdownMenuTrigger
               disabled={isPending || !conversation.canCreateMessage}
-              className="cursor-pointer hover:bg-accent"
+              className="flex size-11 cursor-pointer items-center justify-center rounded-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label="Add attachment"
             >
               <span>
                 <Plus size={20} />
@@ -175,11 +177,12 @@ export const MessageCreate = forwardRef<MessageCreateRefProps>((_, ref) => {
           ) : (
             <button
               type="submit"
+              aria-label="Send message"
               className={`${
                 conversation.canCreateMessage && hasContent
                   ? 'cursor-pointer text-blue-600'
                   : 'cursor-default text-muted-foreground'
-              }`}
+              } flex size-11 items-center justify-center rounded-md focus-visible:ring-2 focus-visible:ring-ring`}
               onClick={handleSubmit}
             >
               <Send size={20} />
