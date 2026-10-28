@@ -1,3 +1,4 @@
+// Modified by Heard: make page actions usable with touch and keyboard on phones.
 import { Copy, Image, LetterText, Settings, Trash2 } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
@@ -31,7 +32,13 @@ export const PageSettings = ({ page, role }: PageSettingsProps) => {
     <Fragment>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Settings className="size-4 cursor-pointer text-muted-foreground hover:text-foreground" />
+          <button
+            type="button"
+            aria-label="Page settings"
+            className="flex size-11 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring sm:size-auto sm:p-1.5"
+          >
+            <Settings className="size-4" />
+          </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="bottom" className="mr-2 w-80">
           <DropdownMenuLabel>{page.name}</DropdownMenuLabel>
