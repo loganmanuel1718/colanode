@@ -1,3 +1,4 @@
+// Modified by Heard: give database view creation a usable touch and keyboard target.
 import { Plus } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
@@ -8,10 +9,14 @@ export const ViewCreateButton = () => {
 
   return (
     <Fragment>
-      <Plus
-        className="mb-1 size-4 cursor-pointer text-sm text-muted-foreground hover:text-foreground"
+      <button
+        type="button"
+        className="flex size-11 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label="Create database view"
         onClick={() => setOpen(true)}
-      />
+      >
+        <Plus className="size-4" />
+      </button>
       <ViewCreateDialog open={open} onOpenChange={setOpen} />
     </Fragment>
   );

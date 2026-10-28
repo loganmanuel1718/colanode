@@ -10,6 +10,7 @@ import {
   apiErrorOutputSchema,
 } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
+import { getHeardWorkspaceForAccount } from '@colanode/server/lib/heard-mappings';
 
 export const accountSyncRoute: FastifyPluginCallbackZod = (
   instance,
@@ -69,13 +70,34 @@ export const accountSyncRoute: FastifyPluginCallbackZod = (
       }
 
       const workspaceOutputs: WorkspaceOutput[] = [];
-      const users = await database
+      const managedWorkspaceId = await getHeardWorkspaceForAccount(account.id);
+      const allUsers = await database
         .selectFrom('users')
         .where('account_id', '=', account.id)
         .where('status', '=', UserStatus.Active)
         .where('role', '!=', 'none')
         .selectAll()
         .execute();
+      const managedWorkspaces =
+        allUsers.length > 0
+          ? await database
+              .selectFrom('heard_workspace_mappings')
+              .select('workspace_id')
+              .where(
+                'workspace_id',
+                'in',
+                allUsers.map((user) => user.workspace_id)
+              )
+              .execute()
+          : [];
+      const mappedWorkspaceIds = new Set(
+        managedWorkspaces.map((mapping) => mapping.workspace_id)
+      );
+      const users = allUsers.filter((user) =>
+        managedWorkspaceId
+          ? user.workspace_id === managedWorkspaceId
+          : !mappedWorkspaceIds.has(user.workspace_id)
+      );
 
       if (users.length > 0) {
         const workspaceIds = users.map((u) => u.workspace_id);

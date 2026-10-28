@@ -18,6 +18,7 @@ import {
   buildLoginVerifyOutput,
 } from '@colanode/server/lib/accounts';
 import { config } from '@colanode/server/lib/config';
+import { isHeardAccountManaged } from '@colanode/server/lib/heard-mappings';
 import { storage } from '@colanode/server/lib/storage';
 import { AccountAttributes } from '@colanode/server/types/accounts';
 
@@ -167,6 +168,8 @@ export const googleLoginRoute: FastifyPluginCallbackZod = (
         });
       }
 
+      googleUser.email = googleUser.email.trim().toLowerCase();
+
       let existingAccount = await database
         .selectFrom('accounts')
         .where('email', '=', googleUser.email)
@@ -174,6 +177,12 @@ export const googleLoginRoute: FastifyPluginCallbackZod = (
         .executeTakeFirst();
 
       if (existingAccount) {
+        if (await isHeardAccountManaged(existingAccount.id)) {
+          return reply.code(400).send({
+            code: ApiErrorCode.GoogleAuthFailed,
+            message: 'Google login is not allowed for this account.',
+          });
+        }
         const existingGoogleId = existingAccount.attributes?.googleId;
         if (existingGoogleId && existingGoogleId !== googleUser.id) {
           return reply.code(400).send({

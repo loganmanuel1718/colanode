@@ -11,6 +11,7 @@ import {
 } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
 import { eventBus } from '@colanode/server/lib/event-bus';
+import { isHeardWorkspaceManaged } from '@colanode/server/lib/heard-mappings';
 
 export const workspaceUpdateRoute: FastifyPluginCallbackZod = (
   instance,
@@ -36,6 +37,13 @@ export const workspaceUpdateRoute: FastifyPluginCallbackZod = (
     handler: async (request, reply) => {
       const workspaceId = request.params.workspaceId;
       const input = request.body;
+
+      if (await isHeardWorkspaceManaged(workspaceId)) {
+        return reply.code(403).send({
+          code: ApiErrorCode.WorkspaceUpdateNotAllowed,
+          message: 'Heard manages this workspace.',
+        });
+      }
 
       if (request.workspace.status === WorkspaceStatus.Readonly) {
         return reply.code(403).send({

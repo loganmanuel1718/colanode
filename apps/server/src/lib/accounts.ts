@@ -14,6 +14,7 @@ import {
 import { database } from '@colanode/server/data/database';
 import { SelectAccount } from '@colanode/server/data/schema';
 import { config } from '@colanode/server/lib/config';
+import { isHeardAccountManaged } from '@colanode/server/lib/heard-mappings';
 import {
   deleteOtp,
   fetchOtp,
@@ -58,13 +59,35 @@ export const buildLoginSuccessOutput = async (
   account: SelectAccount,
   client: ClientContext
 ): Promise<LoginSuccessOutput> => {
-  const users = await database
+  if (await isHeardAccountManaged(account.id)) {
+    throw new Error('Heard-managed accounts cannot use native login.');
+  }
+
+  const userRows = await database
     .selectFrom('users')
     .where('account_id', '=', account.id)
     .where('status', '=', UserStatus.Active)
     .where('role', '!=', 'none')
     .selectAll()
     .execute();
+  const mappedWorkspaces =
+    userRows.length > 0
+      ? await database
+          .selectFrom('heard_workspace_mappings')
+          .select('workspace_id')
+          .where(
+            'workspace_id',
+            'in',
+            userRows.map((user) => user.workspace_id)
+          )
+          .execute()
+      : [];
+  const mappedWorkspaceIds = new Set(
+    mappedWorkspaces.map((mapping) => mapping.workspace_id)
+  );
+  const users = userRows.filter(
+    (user) => !mappedWorkspaceIds.has(user.workspace_id)
+  );
 
   const workspaceOutputs: WorkspaceOutput[] = [];
   if (users.length > 0) {

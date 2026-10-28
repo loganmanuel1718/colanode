@@ -1,6 +1,6 @@
 import { z } from 'zod/v4';
 
-const heardIdentitySchema = z.object({
+export const heardIdentitySchema = z.object({
   heardUserId: z.uuid(),
   organizationId: z.uuid(),
   role: z.enum(['admin', 'chef', 'cook']),

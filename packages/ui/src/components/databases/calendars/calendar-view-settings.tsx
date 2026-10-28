@@ -1,3 +1,4 @@
+// Modified by Heard: identify the database view settings touch trigger.
 import { Lock, LockOpen, Trash2 } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
@@ -25,7 +26,7 @@ export const CalendarViewSettings = () => {
   return (
     <Fragment>
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger>
+        <PopoverTrigger aria-label="View settings">
           <ViewSettingsButton />
         </PopoverTrigger>
         <PopoverContent className="mr-4 flex w-90 flex-col gap-1.5 p-2">

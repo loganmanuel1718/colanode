@@ -7,6 +7,10 @@ import {
   UserStatus,
 } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
+import {
+  getHeardWorkspaceForAccount,
+  isHeardWorkspaceManaged,
+} from '@colanode/server/lib/heard-mappings';
 import { createLogger } from '@colanode/server/lib/logger';
 import { BaseSynchronizer } from '@colanode/server/synchronizers/base';
 import { CollaborationSynchronizer } from '@colanode/server/synchronizers/collaborations';
@@ -242,6 +246,17 @@ export class SocketConnection {
       !user ||
       user.status !== UserStatus.Active ||
       user.account_id !== this.context.accountId
+    ) {
+      return null;
+    }
+
+    const managedWorkspaceId = await getHeardWorkspaceForAccount(
+      this.context.accountId
+    );
+    if (
+      (managedWorkspaceId && managedWorkspaceId !== user.workspace_id) ||
+      (!managedWorkspaceId &&
+        (await isHeardWorkspaceManaged(user.workspace_id)))
     ) {
       return null;
     }
