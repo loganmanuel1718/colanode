@@ -100,6 +100,21 @@ export type SelectUser = Selectable<UserTable>;
 export type CreateUser = Insertable<UserTable>;
 export type UpdateUser = Updateable<UserTable>;
 
+interface HeardWorkspaceMappingTable {
+  heard_organization_id: ColumnType<string, string, never>;
+  workspace_id: ColumnType<string, string, never>;
+  created_at: ColumnType<Date, Date, never>;
+}
+
+interface HeardMemberMappingTable {
+  heard_user_id: ColumnType<string, string, never>;
+  heard_organization_id: ColumnType<string, string, never>;
+  account_id: ColumnType<string, string, never>;
+  user_id: ColumnType<string, string, never>;
+  created_at: ColumnType<Date, Date, never>;
+  revoked_at: ColumnType<Date | null, Date | null, Date | null>;
+}
+
 interface NodeTable {
   id: ColumnType<string, string, never>;
   type: ColumnType<NodeType, never, never>;
@@ -311,6 +326,8 @@ export interface DatabaseSchema {
   devices: DeviceTable;
   workspaces: WorkspaceTable;
   users: UserTable;
+  heard_workspace_mappings: HeardWorkspaceMappingTable;
+  heard_member_mappings: HeardMemberMappingTable;
   nodes: NodeTable;
   node_updates: NodeUpdateTable;
   node_interactions: NodeInteractionTable;
