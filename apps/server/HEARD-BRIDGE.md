@@ -3,7 +3,8 @@
 This branch extends the disabled identity backchannel from PR #1. It adds no
 HTTP exchange route or client sign-in path. The existing Heard group chat
 remains the live message store; this branch does not import or cut over messages.
-Unmapped Colanode accounts retain their existing routes.
+With `heard.enabled` false, unmapped Colanode accounts retain their existing
+routes.
 
 ## Mapping contract
 
@@ -42,6 +43,12 @@ Unmapped Colanode accounts retain their existing routes.
   and socket user selection remain scoped to the mapped workspace. A native
   account with a pre-existing membership in a mapped workspace is also denied
   and does not receive that workspace in login or sync output.
+- With `heard.enabled` true, native email login, registration, OTP
+  verification, password reset and Google login are not registered and return
+  404; logout stays. Nobody can register a native account under a Heard
+  member's email to block that member's provisioning. A native account that
+  already holds the email, from before Heard mode or from a pending invite,
+  still conflicts until managed accounts store a synthetic `accounts.email`.
 
 ## Required before enabling
 
